@@ -4,6 +4,7 @@ from sanic.response import text
 app = Sanic("MyHelloWorldApp")
 
 
-@app.get("/")
-async def hello_world(request):
-    return text("Hello, world.")
+@app.route('/')
+@app.route('/<path:path>')
+async def index(request, path=""):
+    return text(path)
