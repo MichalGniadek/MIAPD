@@ -1,17 +1,14 @@
 from sanic import Sanic
-from sanic.response import html
+from sanic.response import text
 from sanic.request import Request
 from sanic.websocket import WebSocketConnection
 
 app = Sanic("MyHelloWorldApp")
-# with open("choice.html", encoding='utf-8') as f:
-#     app.choice_html = f.read()
-# print(app.choice_html)
 
 
-# @app.get("/api/server")
-# async def index(_: Request):
-#     return html(app.choice_html)
+@app.get("hello")
+async def hello(_: Request):
+    return text("hello")
 
 
 @app.websocket("api/server/connect")
