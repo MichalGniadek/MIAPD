@@ -1,0 +1,18 @@
+<div class="outer">
+    <div class="option_container">
+        <span>You prefer:</span>
+        <div>{{option_a}}</div>
+        <span>over:</span>
+        <div>{{option_b}}</div>
+    </div>
+    <hr>
+    <div class="decision_container">
+        <span>No</span>
+        <button hx-post="/do" hx-target=".outer" type="button" hx-vals='{"value":-2}'>-2</button>
+        <button hx-post="/do" hx-target=".outer" type="button" hx-vals='{"value":-1}'>-1</button>
+        <button hx-post="/do" hx-target=".outer" type="button" hx-vals='{"value":0}'>0</button>
+        <button hx-post="/do" hx-target=".outer" type="button" hx-vals='{"value":1}'>+1</button>
+        <button hx-post="/do" hx-target=".outer" type="button" hx-vals='{"value":2}'>+2</button>
+        <span>Yes</span>
+    </div>
+</div>

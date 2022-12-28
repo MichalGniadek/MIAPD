@@ -1,0 +1,139 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>MIAPD</title>
+    <script src="https://unpkg.com/htmx.org@1.8.4"
+        integrity="sha384-wg5Y/JwF7VxGk4zLsJEcAojRtlVp1FKKdGy1qN+OMtdq72WRvX/EdRdqg/LOhYeV"
+        crossorigin="anonymous"></script>
+    <style>
+        body {
+            min-height: 100vh;
+            margin: 0;
+            background-color: #ececee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: sans-serif;
+        }
+
+        .main {
+            max-width: 500px;
+            padding: 2em;
+            background-color: #ffffff;
+            border-radius: 5%;
+            margin: 2em 0;
+            box-shadow: 0px 0px 50px -20px #6d27e8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 2em;
+        }
+
+        form,
+        .outer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 1em;
+        }
+
+        button {
+            padding: 0.4em;
+            background-color: #6d27e8;
+            border-radius: 10%;
+            border: none;
+            color: #ffffff;
+            font-size: 2em;
+            border: transparent solid 2px;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #421a86;
+        }
+
+        button:focus {
+            outline: none;
+            border: #421a86 solid 2px;
+        }
+
+        input {
+            padding: 0.3em;
+            background-color: #ffffff;
+            border: none;
+            font-size: 2em;
+            border-radius: 10px;
+            border: #cccccc solid 2px;
+            transition: border 0.2s;
+        }
+
+        input:invalid {
+            border: red solid 2px;
+        }
+
+        input:focus {
+            outline: none;
+            border: #6d27e8 solid 2px;
+        }
+
+        hr {
+            width: 100%;
+            border: #cccccc solid 1px;
+        }
+
+        .option_container {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5em;
+        }
+
+        .option_container>span {
+            font-size: 1.5em;
+        }
+
+        .option_container>div {
+            font-size: 2em;
+            padding: 0.2em;
+            border-radius: 10px;
+            border: #cccccc solid 2px;
+        }
+
+        .decision_container {
+            display: flex;
+            flex-direction: row;
+            justify-items: center;
+            align-items: center;
+            gap: 1em;
+        }
+
+        .decision_container>button {
+            font-size: 1.5em;
+            width: 2em;
+            height: 2em;
+            padding: 0;
+        }
+
+        .decision_container>span {
+            font-size: 1.5em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main">
+        <form hx-post="/login" hx-swap="outerHTML">
+            <input name="name" type="text" placeholder="Name (required)" required="required">
+            <hr>
+            <input name="code" type="text" placeholder="Code">
+            <button type="submit">Join</button>
+            <hr>
+            <button type="submit">Create</button>
+        </form>
+    </div>
+</body>
+
+</html>
