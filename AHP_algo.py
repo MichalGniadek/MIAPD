@@ -10,9 +10,7 @@ def txt(s: str): return f'<div>{s}</div>'
 
 def shuffled_range(*args):
     l = list(range(*args))
-    print(l)
     shuffle(l)
-    print(l)
     return l
 
 
