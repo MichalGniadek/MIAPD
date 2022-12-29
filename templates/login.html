@@ -1,0 +1,7 @@
+<form class="outer" hx-post="/login" hx-swap="outerHTML">
+    <input name="name" type="text" placeholder="Name (required)" required="required">
+    <hr>
+    <input name="code" type="text" placeholder="Code">
+    {{ notice }}
+    <button type="submit">Join</button>
+</form>

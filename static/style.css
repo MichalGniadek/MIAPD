@@ -1,0 +1,165 @@
+body {
+    min-height: 100vh;
+    margin: 0;
+    background-color: #ececee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: sans-serif;
+}
+
+.main {
+    max-width: 500px;
+    padding: 2em;
+    background-color: #ffffff;
+    border-radius: 5%;
+    margin: 2em 0;
+    box-shadow: 0px 0px 50px -20px #6d27e8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 2em;
+}
+
+.outer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1em;
+    color: #555555;
+}
+
+button {
+    padding: 0.4em;
+    background-color: #6d27e8;
+    border-radius: 10%;
+    border: none;
+    color: #ffffff;
+    font-size: 2em;
+    border: transparent solid 2px;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #421a86;
+}
+
+button:focus {
+    outline: none;
+    border: #421a86 solid 2px;
+}
+
+input {
+    padding: 0.3em;
+    background-color: #ffffff;
+    border: none;
+    font-size: 2em;
+    border-radius: 10px;
+    border: #cccccc solid 2px;
+    transition: border 0.2s;
+}
+
+input:invalid {
+    border: red solid 2px;
+}
+
+input:focus {
+    outline: none;
+    border: #6d27e8 solid 2px;
+}
+
+hr {
+    width: 100%;
+    border: #cccccc solid 1px;
+}
+
+.option_container {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+}
+
+.option_container>span {
+    font-size: 1.5em;
+}
+
+.option_container>div {
+    font-size: 2em;
+    padding: 0.2em;
+    border-radius: 10px;
+    border: #cccccc solid 2px;
+}
+
+.option_container>img {
+    max-width: 100%;
+    border-radius: 10px;
+    border: #cccccc solid 2px;
+}
+
+.decision_container {
+    display: flex;
+    flex-direction: row;
+    justify-items: center;
+    align-items: center;
+    gap: 1em;
+}
+
+.decision_container>button {
+    font-size: 1.5em;
+    width: 2em;
+    height: 2em;
+    padding: 0;
+}
+
+.decision_container>span {
+    font-size: 1.5em;
+}
+
+.waiting {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 2em;
+}
+
+.waiting-indicator {
+    margin-top: 1em;
+    border: 16px solid transparent;
+    border-top: 16px solid #6d27e8;
+    border-bottom: 16px solid #6d27e8;
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite;
+}
+
+.results {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5em;
+}
+
+.results>.emoji {
+    font-size: 2em;
+    margin: 0.5em;
+}
+
+.results>.name {
+    font-size: 2.2em;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
