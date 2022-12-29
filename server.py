@@ -51,7 +51,7 @@ class RoomManager:
         user = self.rooms[code].users[name]
 
         def try_get_prio():
-            prio_choice = user.expert.get_next_prio_request()
+            prio_choice = user.expert.get_next_cat_prio_request()
             if prio_choice:
                 user.curr_choice = "prio", prio_choice
                 return prio_choice[0].pretty(), prio_choice[1].pretty()
@@ -72,7 +72,7 @@ class RoomManager:
 
         choice_type, choice_args = user.curr_choice
         if choice_type == "prio":
-            user.expert.set_prio_answer(*choice_args, value)
+            user.expert.set_cat_prio_answer(*choice_args, value)
         elif choice_type == "cat":
             user.expert.set_cat_answer(*choice_args, value)
         else:
