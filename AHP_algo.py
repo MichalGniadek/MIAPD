@@ -52,12 +52,12 @@ class AHP:
         self.restaurants = self.mock_data()
 
     def mock_data(self):
-        mc_donald = Restaurant("McDonald", "low", 1, "weak", "fast food")
-        kawiory = Restaurant("Kawiory", "low", 0.8, "average", "polish food")
-        zaczek = Restaurant("Zaczek", "low", 0.5, "weak", "polish food")
-        laila = Restaurant("Laila", "medium", 0.2, "good", "vegetarian")
-        sushi77 = Restaurant("Sushi 77", "high", 1, "good", "sushi")
-        studio = Restaurant("Studio", "medium", 1.5, "good", "fast food")
+        mc_donald = Restaurant("McDonald", "low", 1, "low", "fast food")
+        kawiory = Restaurant("Kawiory", "low", 0.8, "medium", "polish food")
+        zaczek = Restaurant("Zaczek", "low", 0.5, "low", "polish food")
+        laila = Restaurant("Laila", "medium", 0.2, "high", "vegetarian")
+        sushi77 = Restaurant("Sushi 77", "high", 1, "high", "sushi")
+        studio = Restaurant("Studio", "medium", 1.5, "high", "fast food")
 
         return [mc_donald, kawiory, zaczek, laila, sushi77, studio]
 
@@ -80,9 +80,25 @@ class Expert:
         for r1 in range(self.res_num):
             for r2 in range(self.res_num):
                 for c in self.categories:
-                    if self.restaurants[r1].values[c] == self.restaurants[r2].values[c]:
+                    v1 = self.restaurants[r1].values[c]
+                    v2 = self.restaurants[r2].values[c]
+                    if v1 == v2:
                         self.c_cat[c][r1][r2] = 1
                         self.c_cat[c][r2][r1] = 1
+        
+                    elif c == Category.LOCATION:
+                        self.c_cat[c][r1][r2] = v2 / v1
+                        self.c_cat[c][r2][r1] = v1 / v2
+
+                    elif c == Category.PRICE or c == Category.REVIEWS:
+                        if v1 == "low" and v2 == "high":
+                            self.c_cat[c][r1][r2] = 7
+                            self.c_cat[c][r2][r1] = 1/7
+                        elif (v1 == "medium" and v2 == "high") or \
+                             (v1 == "low" and v2 == "medium"):
+                            self.c_cat[c][r1][r2] = 3
+                            self.c_cat[c][r2][r1] = 1/3 
+
 
     def get_next_cat_request(self):
         for cat in self.categories:
@@ -112,6 +128,18 @@ class Expert:
     def is_finished(self):
         return self.get_next_cat_request() is None and self.get_next_cat_prio_request() is None
 
+    def all_inconstiencies(self):
+        prio_CI = inconsistency_index(self.c_prio)
+        cat_CIs = [inconsistency_index(cat) for cat in self.c_cat]
+
+        return prio_CI, max(cat_CIs)
+
+def inconsistency_index(arr):
+    eig, _ = np.linalg.eig(arr)
+    eig_max = max(abs(eig))
+    n = arr.shape[0]
+    CI = (eig_max  - n) / (n-1)
+    return (eig_max, CI)
 
 class Solver:
     def __init__(self, experts):
