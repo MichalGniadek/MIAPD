@@ -134,6 +134,12 @@ class Expert:
 
         return prio_CI, max(cat_CIs)
 
+    def get_cat(self):
+        return self.c_cat
+
+    def get_prio(self):
+        return self.c_prio
+
 def inconsistency_index(arr):
     eig, _ = np.linalg.eig(arr)
     eig_max = max(abs(eig))
@@ -146,4 +152,19 @@ class Solver:
         self.experts = experts
 
     def eigenvalue_method(self):
-        pass
+        w = [0] * len(Category)
+        for expert in self.experts:
+            w_d1 = [ev_eig(cat) for cat in expert.get_cat()]
+            w_d2 = [np.reshape(w_d1, (1, -1)) for w_ in w_d1]
+            w_cat = np.concatenate(w_d2, axis=0).T
+            w_prio = ev_eig(expert.get_prio())
+            w *= np.dot(w_cat, w_prio)
+            
+        return np.sqrt(w)
+        
+
+def ev_eig(arr):
+    eig, eigv = np.linalg.eig(arr)
+    i = np.argmax(eig)
+    wmax = abs(eigv[:, i])
+    return wmax / wmax.sum()
