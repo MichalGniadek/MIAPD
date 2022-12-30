@@ -150,9 +150,10 @@ def inconsistency_index(arr):
 class Solver:
     def __init__(self, experts):
         self.experts = experts
+        self.restaurants = self.experts[0].restaurants
 
     def eigenvalue_method(self):
-        w = [0] * len(Category)
+        w = [1] * len(Category)
         for expert in self.experts:
             w_d1 = [ev_eig(cat) for cat in expert.get_cat()]
             w_d2 = [np.reshape(w_d1, (1, -1)) for w_ in w_d1]
@@ -160,11 +161,10 @@ class Solver:
             w_prio = ev_eig(expert.get_prio())
             w *= np.dot(w_cat, w_prio)
             
-        return np.sqrt(w)
-        
+        return self.restaurants[np.argmax(np.sqrt(w))] 
 
 def ev_eig(arr):
     eig, eigv = np.linalg.eig(arr)
-    i = np.argmax(eig)
+    i = np.argmax(abs(eig))
     wmax = abs(eigv[:, i])
     return wmax / wmax.sum()
