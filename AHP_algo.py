@@ -47,6 +47,7 @@ class Expert:
             self.prio_mat[i][i] = 1
 
         photo_i = self.categories.index(BuiltinCategories.PHOTO.value)
+        print(BuiltinCategories.PHOTO.value, photo_i, self.categories[-1])
         for i in range(self.cat_num):
             self.prio_mat[photo_i][i] = 1
             self.prio_mat[i][photo_i] = 1
