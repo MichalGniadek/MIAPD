@@ -46,10 +46,10 @@ class Expert:
         for i in range(self.cat_num):
             self.prio_mat[i][i] = 1
 
+        photo_i = self.categories.index(BuiltinCategories.PHOTO.value)
         for i in range(self.cat_num):
-            # -1 is photo category index
-            self.prio_mat[-1][i] = 1
-            self.prio_mat[i][-1] = 1
+            self.prio_mat[photo_i][i] = 1
+            self.prio_mat[i][photo_i] = 1
 
         for r1 in range(self.res_num):
             for r2 in range(r1, self.res_num):
