@@ -23,7 +23,7 @@ class BuiltinCategories(Enum):
 
 class AHP:
     def __init__(self, file):
-        with open(file, encoding='utf8', newline='') as csvfile:
+        with open(file, encoding='utf8') as csvfile:
             reader = csv.DictReader(
                 csvfile, delimiter="|", quotechar="\"", quoting=csv.QUOTE_NONNUMERIC)
 
