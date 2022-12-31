@@ -1,11 +1,11 @@
 from dataclasses import dataclass, field
 import random
 import string
-from sys import argv
+from typing import Dict
 from functools import wraps
 from flask import Flask, make_response, render_template, request
 
-from AHP_algo import AHP, Expert
+from ahp_algo import AHP, Expert, group_evm
 
 app = Flask(__name__, static_url_path="/")
 
@@ -19,12 +19,12 @@ class User:
 @dataclass
 class Room:
     ahp: AHP = AHP()
-    users: dict[str, User] = field(default_factory=dict)
+    users: Dict[str, User] = field(default_factory=dict)
 
 
 class RoomManager:
     def __init__(self) -> None:
-        self.rooms: dict[str, Room] = {}
+        self.rooms: Dict[str, Room] = {}
 
     def random_key() -> str:
         return ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
@@ -85,7 +85,7 @@ class RoomManager:
             if not user.expert.is_finished():
                 break
         else:
-            return "McDonalds"
+            return group_evm([user.expert for user in room.users.values()]).values["name"]
 
 
 rooms = RoomManager()

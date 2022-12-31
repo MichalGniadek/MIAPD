@@ -1,5 +1,6 @@
 from enum import Enum
 from random import shuffle
+from typing import List
 
 import numpy as np
 
@@ -64,107 +65,111 @@ class AHP:
 
 class Expert:
     def __init__(self, ahp: AHP):
+        if not ahp:
+            return
         self.categories = ahp.categories
         self.restaurants = ahp.restaurants
         self.cat_num = len(self.categories)
         self.res_num = len(self.restaurants)
-        self.c_cat = {c: np.zeros((self.res_num, self.res_num), float)
-                      for c in self.categories}
-        self.c_prio = np.zeros((self.cat_num, self.cat_num), float)
-        for c in self.categories:
-            for i in range(self.res_num):
-                self.c_cat[c][i][i] = 1
+        self.cat_mat = {c: np.zeros((self.res_num, self.res_num), float)
+                        for c in self.categories}
+        self.prio_mat = np.zeros((self.cat_num, self.cat_num), float)
+
         for i in range(self.cat_num):
-            self.c_prio[i][i] = 1
+            self.prio_mat[i][i] = 1
 
         for r1 in range(self.res_num):
-            for r2 in range(self.res_num):
+            for r2 in range(r1, self.res_num):
                 for c in self.categories:
                     v1 = self.restaurants[r1].values[c]
                     v2 = self.restaurants[r2].values[c]
                     if v1 == v2:
-                        self.c_cat[c][r1][r2] = 1
-                        self.c_cat[c][r2][r1] = 1
-        
+                        self.cat_mat[c][r1][r2] = 1
+                        self.cat_mat[c][r2][r1] = 1
+
                     elif c == Category.LOCATION:
-                        self.c_cat[c][r1][r2] = v2 / v1
-                        self.c_cat[c][r2][r1] = v1 / v2
+                        self.cat_mat[c][r1][r2] = v2 / v1
+                        self.cat_mat[c][r2][r1] = v1 / v2
 
                     elif c == Category.PRICE or c == Category.REVIEWS:
                         if v1 == "low" and v2 == "high":
-                            self.c_cat[c][r1][r2] = 7
-                            self.c_cat[c][r2][r1] = 1/7
+                            self.cat_mat[c][r1][r2] = 5
+                            self.cat_mat[c][r2][r1] = 1/5
                         elif (v1 == "medium" and v2 == "high") or \
                              (v1 == "low" and v2 == "medium"):
-                            self.c_cat[c][r1][r2] = 3
-                            self.c_cat[c][r2][r1] = 1/3 
-
+                            self.cat_mat[c][r1][r2] = 3
+                            self.cat_mat[c][r2][r1] = 1/3
 
     def get_next_cat_request(self):
         for cat in self.categories:
             for i in shuffled_range(self.res_num):
                 for j in shuffled_range(i+1, self.res_num):
-                    if self.c_cat[cat][i][j] == 0:
+                    if self.cat_mat[cat][i][j] == 0:
                         return cat, self.restaurants[i], self.restaurants[j]
 
     def set_cat_answer(self, cat: Category, res1: Restaurant, res2: Restaurant, result):
         i = self.restaurants.index(res1)
         j = self.restaurants.index(res2)
-        self.c_cat[cat][i][j] = result
-        self.c_cat[cat][j][i] = 1 / result
+        self.cat_mat[cat][i][j] = result
+        self.cat_mat[cat][j][i] = 1 / result
 
     def get_next_cat_prio_request(self):
         for i in shuffled_range(self.cat_num):
             for j in shuffled_range(i+1, self.cat_num):
-                if self.c_prio[i][j] == 0:
+                if self.prio_mat[i][j] == 0:
                     return self.categories[i], self.categories[j]
 
     def set_cat_prio_answer(self, cat1: Category, cat2: Category, result):
         i = self.categories.index(cat1)
         j = self.categories.index(cat2)
-        self.c_prio[i][j] = result
-        self.c_prio[j][i] = 1 / result
+        self.prio_mat[i][j] = result
+        self.prio_mat[j][i] = 1 / result
 
     def is_finished(self):
         return self.get_next_cat_request() is None and self.get_next_cat_prio_request() is None
 
-    def all_inconstiencies(self):
-        prio_CI = inconsistency_index(self.c_prio)
-        cat_CIs = [inconsistency_index(cat) for cat in self.c_cat]
+    def all_inconsistencies(self):
+        prio_CI = inconsistency_index(self.prio_mat)
+        cat_CIs = [inconsistency_index(cat) for cat in self.cat_mat]
 
         return prio_CI, max(cat_CIs)
 
     def get_cat(self):
-        return self.c_cat
+        return self.cat_mat
 
     def get_prio(self):
-        return self.c_prio
+        return self.prio_mat
+
 
 def inconsistency_index(arr):
     eig, _ = np.linalg.eig(arr)
     eig_max = max(abs(eig))
     n = arr.shape[0]
-    CI = (eig_max  - n) / (n-1)
-    return (eig_max, CI)
+    ci = (eig_max - n) / (n-1)
+    return ci
 
-class Solver:
-    def __init__(self, experts):
-        self.experts = experts
-        self.restaurants = self.experts[0].restaurants
 
-    def eigenvalue_method(self):
-        w = [1] * len(Category)
-        for expert in self.experts:
-            w_d1 = [ev_eig(cat) for cat in expert.get_cat()]
-            w_d2 = [np.reshape(w_d1, (1, -1)) for w_ in w_d1]
-            w_cat = np.concatenate(w_d2, axis=0).T
-            w_prio = ev_eig(expert.get_prio())
-            w *= np.dot(w_cat, w_prio)
-            
-        return self.restaurants[np.argmax(np.sqrt(w))] 
-
-def ev_eig(arr):
-    eig, eigv = np.linalg.eig(arr)
+def evm(mat):
+    eig, eigv = np.linalg.eig(mat)
     i = np.argmax(abs(eig))
     wmax = abs(eigv[:, i])
     return wmax / wmax.sum()
+
+
+def hierarchical_evm(expert: Expert):
+    cat_mats = expert.get_cat().values()
+    w_cat = np.array([evm(mat) for mat in cat_mats])
+    w_prio = evm(expert.get_prio())
+    return np.dot(w_cat.T, w_prio)
+
+
+def group_evm(experts: List[Expert]):
+    restaurants = experts[0].restaurants
+    n = len(restaurants)
+
+    w = [1] * n
+    for expert in experts:
+        w *= hierarchical_evm(expert)
+    w **= 1/n
+
+    return restaurants[np.argmax(w)]
