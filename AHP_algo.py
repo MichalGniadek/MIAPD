@@ -1,12 +1,10 @@
 from enum import Enum
 from random import shuffle
-from typing import List
+from typing import List, Dict
+import csv
+
 
 import numpy as np
-
-
-def img(s: str): return f'<img src="{s}" alt="{s.split(".")[0]}">'
-def txt(s: str): return f'<div>{s}</div>'
 
 
 def shuffled_range(*args):
@@ -15,60 +13,29 @@ def shuffled_range(*args):
     return l
 
 
-class Category(Enum):
-    PRICE = "price"
-    LOCATION = "location"
-    REVIEWS = "reviews"
-    FOOD_TYPE = "food_type"
-
-    def pretty(self):
-        if self == Category.PRICE:
-            return txt("💰 Price")
-        if self == Category.LOCATION:
-            return txt("🏃 Location")
-        if self == Category.REVIEWS:
-            return txt("⭐ Reviews")
-        if self == Category.FOOD_TYPE:
-            return txt("🍽️ Food Type")
-
-    def pretty_restaurant(self, restaurant: "Restaurant"):
-        if False:  # for future
-            return img(restaurant[self.value])
-        return txt(restaurant.values[self])
-
-
-class Restaurant:
-    def __init__(self, name, price, location, reviews, food_type):
-        self.values = {"name": name,
-                       Category.PRICE: price,
-                       Category.LOCATION: location,
-                       Category.REVIEWS: reviews,
-                       Category.FOOD_TYPE: food_type}
+class BuiltinCategories(Enum):
+    PRICE = "💰 Affordable"
+    LOCATION = "🏃 Near"
+    REVIEWS = "⭐ Well-reviewed"
+    FOOD_TYPE = "🍽️ Specific Food Type"
 
 
 class AHP:
-    categories = [c for c in Category]
+    def __init__(self, file):
+        with open(file, encoding='utf8', newline='') as csvfile:
+            reader = csv.DictReader(
+                csvfile, delimiter="|", quotechar="\"", quoting=csv.QUOTE_NONNUMERIC)
 
-    def __init__(self):
-        self.restaurants = self.mock_data()
-
-    def mock_data(self):
-        mc_donald = Restaurant("McDonald", "low", 1, "low", "fast food")
-        kawiory = Restaurant("Kawiory", "low", 0.8, "medium", "polish food")
-        zaczek = Restaurant("Zaczek", "low", 0.5, "low", "polish food")
-        laila = Restaurant("Laila", "medium", 0.2, "high", "vegetarian")
-        sushi77 = Restaurant("Sushi 77", "high", 1, "high", "sushi")
-        studio = Restaurant("Studio", "medium", 1.5, "high", "fast food")
-
-        return [mc_donald, kawiory, zaczek, laila, sushi77, studio]
+            self.categories = list(reader.fieldnames)[1:]
+            self.restaurants = list(reader)
 
 
 class Expert:
     def __init__(self, ahp: AHP):
         if not ahp:
             return
-        self.categories = ahp.categories
-        self.restaurants = ahp.restaurants
+        self.categories: List[str] = ahp.categories
+        self.restaurants: List[Dict] = ahp.restaurants
         self.cat_num = len(self.categories)
         self.res_num = len(self.restaurants)
         self.cat_mat = {c: np.zeros((self.res_num, self.res_num), float)
@@ -81,24 +48,40 @@ class Expert:
         for r1 in range(self.res_num):
             for r2 in range(r1, self.res_num):
                 for c in self.categories:
-                    v1 = self.restaurants[r1].values[c]
-                    v2 = self.restaurants[r2].values[c]
+                    v1 = self.restaurants[r1][c]
+                    v2 = self.restaurants[r2][c]
                     if v1 == v2:
                         self.cat_mat[c][r1][r2] = 1
                         self.cat_mat[c][r2][r1] = 1
 
-                    elif c == Category.LOCATION:
+                    elif c == BuiltinCategories.LOCATION.value:
                         self.cat_mat[c][r1][r2] = v2 / v1
                         self.cat_mat[c][r2][r1] = v1 / v2
 
-                    elif c == Category.PRICE or c == Category.REVIEWS:
-                        if v1 == "low" and v2 == "high":
-                            self.cat_mat[c][r1][r2] = 5
-                            self.cat_mat[c][r2][r1] = 1/5
-                        elif (v1 == "medium" and v2 == "high") or \
-                             (v1 == "low" and v2 == "medium"):
-                            self.cat_mat[c][r1][r2] = 3
-                            self.cat_mat[c][r2][r1] = 1/3
+                    elif c == BuiltinCategories.PRICE.value:
+                        table = {
+                            ("low", "high"): 5,
+                            ("low", "medium"): 3,
+                            ("medium", "high"): 3,
+                            ("high", "low"): 1/5,
+                            ("medium", "low"): 1/3,
+                            ("high", "medium"): 1/3,
+                        }
+                        if (v1, v2) in table:
+                            self.cat_mat[c][r1][r2] = table[(v1, v2)]
+                            self.cat_mat[c][r2][r1] = 1/table[(v1, v2)]
+                    elif c == BuiltinCategories.REVIEWS.value:
+                        table = {
+                            ("low", "high"): 1/5,
+                            ("low", "medium"): 1/3,
+                            ("medium", "high"): 1/3,
+                            ("high", "low"): 5,
+                            ("medium", "low"): 3,
+                            ("high", "medium"): 3,
+                        }
+                        if (v1, v2) in table:
+                            self.cat_mat[c][r1][r2] = table[(v1, v2)]
+                            self.cat_mat[c][r2][r1] = 1/table[(v1, v2)]
 
     def get_next_cat_request(self):
         for cat in self.categories:
@@ -107,11 +90,14 @@ class Expert:
                     if self.cat_mat[cat][i][j] == 0:
                         return cat, self.restaurants[i], self.restaurants[j]
 
-    def set_cat_answer(self, cat: Category, res1: Restaurant, res2: Restaurant, result):
-        i = self.restaurants.index(res1)
-        j = self.restaurants.index(res2)
-        self.cat_mat[cat][i][j] = result
-        self.cat_mat[cat][j][i] = 1 / result
+    def set_cat_answer(self, cat: str, res1: Dict, res2: Dict, result: float) -> None:
+        v1, v2 = res1[cat], res2[cat]
+
+        for i in range(self.res_num):
+            for j in range(i, self.res_num):
+                if self.restaurants[i][cat] == v1 and self.restaurants[j][cat] == v2:
+                    self.cat_mat[cat][i][j] = result
+                    self.cat_mat[cat][j][i] = 1 / result
 
     def get_next_cat_prio_request(self):
         for i in shuffled_range(self.cat_num):
@@ -119,7 +105,7 @@ class Expert:
                 if self.prio_mat[i][j] == 0:
                     return self.categories[i], self.categories[j]
 
-    def set_cat_prio_answer(self, cat1: Category, cat2: Category, result):
+    def set_cat_prio_answer(self, cat1: str, cat2: str, result: float) -> None:
         i = self.categories.index(cat1)
         j = self.categories.index(cat2)
         self.prio_mat[i][j] = result

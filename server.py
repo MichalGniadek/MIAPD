@@ -18,7 +18,7 @@ class User:
 
 @dataclass
 class Room:
-    ahp: AHP = AHP()
+    ahp: AHP = AHP('data.csv')
     users: Dict[str, User] = field(default_factory=dict)
 
 
@@ -50,17 +50,22 @@ class RoomManager:
     def get_next_choice(self, code: str, name: str):
         user = self.rooms[code].users[name]
 
+        def format(s: str):
+            if s.endswith(".png") or s.endswith(".jpg"):
+                return f'<img src="{s}" alt="{s.split(".")[0]}">'
+            return f'<div>{s}</div>'
+
         def try_get_prio():
             prio_choice = user.expert.get_next_cat_prio_request()
             if prio_choice:
                 user.curr_choice = "prio", prio_choice
-                return prio_choice[0].pretty(), prio_choice[1].pretty()
+                return format(prio_choice[0]), format(prio_choice[1])
 
         def try_get_cat():
             cat_choice = user.expert.get_next_cat_request()
             if cat_choice:
                 user.curr_choice = "cat", cat_choice
-                return cat_choice[0].pretty_restaurant(cat_choice[1]), cat_choice[0].pretty_restaurant(cat_choice[2])
+                return format(cat_choice[1][cat_choice[0]]), format(cat_choice[2][cat_choice[0]])
 
         if random.choice([True, False]):
             return try_get_prio() or try_get_cat()
@@ -85,7 +90,7 @@ class RoomManager:
             if not user.expert.is_finished():
                 break
         else:
-            return group_evm([user.expert for user in room.users.values()]).values["name"]
+            return group_evm([user.expert for user in room.users.values()])["name"]
 
 
 rooms = RoomManager()
