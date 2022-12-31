@@ -5,7 +5,7 @@ from typing import Dict
 from functools import wraps
 from flask import Flask, make_response, render_template, request
 
-from ahp_algo import AHP, Expert, group_evm
+from AHP_algo import AHP, Expert, group_evm
 
 app = Flask(__name__, static_url_path="/")
 

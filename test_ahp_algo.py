@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.testing import assert_allclose
 
-from ahp_algo import Expert, evm, hierarchical_evm, inconsistency_index
+from AHP_algo import Expert, evm, hierarchical_evm, inconsistency_index
 
 
 def test_inconsistency_index():
