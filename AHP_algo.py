@@ -100,7 +100,7 @@ class Expert:
         v1, v2 = res1[cat], res2[cat]
 
         for i in range(self.res_num):
-            for j in range(i, self.res_num):
+            for j in range(self.res_num):
                 if self.restaurants[i][cat] == v1 and self.restaurants[j][cat] == v2:
                     self.cat_mat[cat][i][j] = result
                     self.cat_mat[cat][j][i] = 1 / result
