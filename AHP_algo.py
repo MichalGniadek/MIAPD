@@ -42,6 +42,9 @@ class Expert:
         self.cat_mat = {c: np.zeros((self.res_num, self.res_num), float)
                         for c in self.categories}
         self.prio_mat = np.zeros((self.cat_num, self.cat_num), float)
+        
+        self.cat_req_left = 10
+        self.res_req_lest = 5
 
         for i in range(self.cat_num):
             self.prio_mat[i][i] = 1
@@ -90,10 +93,13 @@ class Expert:
                             self.cat_mat[c][r2][r1] = 1/table[(v1, v2)]
 
     def get_next_cat_request(self):
+        if self.res_req_lest == 0:
+            return None
         for cat in self.categories:
             for i in shuffled_range(self.res_num):
                 for j in shuffled_range(i+1, self.res_num):
                     if self.cat_mat[cat][i][j] == 0:
+                        self.res_req_lest -= 1
                         return cat, self.restaurants[i], self.restaurants[j]
 
     def set_cat_answer(self, cat: str, res1: Dict, res2: Dict, result: float) -> None:
@@ -106,9 +112,12 @@ class Expert:
                     self.cat_mat[cat][j][i] = 1 / result
 
     def get_next_cat_prio_request(self):
+        if self.cat_req_left == 0:
+            return None
         for i in shuffled_range(self.cat_num):
             for j in shuffled_range(i+1, self.cat_num):
                 if self.prio_mat[i][j] == 0:
+                    self.cat_req_left -= 1
                     return self.categories[i], self.categories[j]
 
     def set_cat_prio_answer(self, cat1: str, cat2: str, result: float) -> None:
@@ -133,6 +142,16 @@ class Expert:
         return self.prio_mat
 
 
+def fill_incomplete(c: np.array):
+    n = len(c)
+    m = len(c[0, :])
+    
+    def b(i, j):
+        i, j = int(i), int(j)
+        return np.count_nonzero(c[i, :] == 0.0) + 1.0 if i == j else c[i, j]
+
+    return np.fromfunction(np.vectorize(b), (n, m), dtype=float)
+
 def inconsistency_index(arr):
     eig, _ = np.linalg.eig(arr)
     eig_max = max(abs(eig))
@@ -150,7 +169,7 @@ def evm(mat):
 
 def hierarchical_evm(expert: Expert):
     cat_mats = expert.get_cat().values()
-    w_cat = np.array([evm(mat) for mat in cat_mats])
+    w_cat = np.array([evm(fill_incomplete(mat)) for mat in cat_mats])
     w_prio = evm(expert.get_prio())
     return np.dot(w_cat.T, w_prio)
 

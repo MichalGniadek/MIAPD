@@ -1,7 +1,28 @@
 import numpy as np
 from numpy.testing import assert_allclose
 
-from AHP_algo import Expert, evm, hierarchical_evm, inconsistency_index
+from AHP_algo import Expert, evm, hierarchical_evm, inconsistency_index, fill_incomplete
+
+def test_incomplete_matrix():
+    C = np.array([
+        [1, 2/3, 0, 0, 9],
+        [3/2, 1, 0, 7/4, 0],
+        [0, 0, 1, 0, 1/3],
+        [0, 4/7, 0, 1, 9],
+        [1/9, 0, 3, 1/9, 1],
+    ])
+
+    B = fill_incomplete(C)
+
+    exp_B = np.array([
+        [3, 2/3, 0, 0, 9],
+        [3/2, 3, 0, 7/4, 0],
+        [0, 0, 4, 0, 1/3],
+        [0, 4/7, 0, 3, 9],
+        [1/9, 0, 3, 1/9, 2]
+    ])
+
+    assert_allclose(B, exp_B)
 
 
 def test_inconsistency_index():
@@ -88,5 +109,5 @@ def test_hierarchical_evm():
     ]
 
     result = hierarchical_evm(expert)
-
+    print(result)
     assert_allclose(result, [0.34634713, 0.36914035, 0.28451251])
