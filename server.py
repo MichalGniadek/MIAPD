@@ -5,7 +5,7 @@ from typing import Dict
 from functools import wraps
 from flask import Flask, make_response, render_template, request
 
-from AHP_algo import AHP, Expert, group_evm
+from AHP_algo import AHP, Expert, group_evm_converg
 
 app = Flask(__name__, static_url_path="/")
 
@@ -90,7 +90,7 @@ class RoomManager:
             if not user.expert.is_finished():
                 break
         else:
-            return group_evm([user.expert for user in room.users.values()])["name"]
+            return group_evm_converg([user.expert for user in room.users.values()])["name"]
 
 
 rooms = RoomManager()

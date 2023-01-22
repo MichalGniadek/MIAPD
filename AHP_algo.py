@@ -184,3 +184,32 @@ def group_evm(experts: List[Expert]):
     w **= 1/n
 
     return restaurants[np.argmax(w)]
+
+
+def converge_prios(prios: np.array):
+    n = len(prios)
+
+    def m(i, j):
+        i, j = int(i), int(j)
+        return (1 - np.abs(prios[i] - prios[j])) / np.sum(1 - np.abs(prios[i] - prios))
+
+    M = np.fromfunction(np.vectorize(m), (n, n), dtype=float)
+
+    while np.max(prios) - np.min(prios) > 0.001:
+        prios = M @ prios
+
+    print(prios)
+    return prios[0]
+
+
+def group_evm_converg(experts: List[Expert]):
+    restaurants = experts[0].restaurants
+    n = len(restaurants)
+
+    w = np.array([hierarchical_evm(expert) for expert in experts])
+
+    fin_prio = []
+    for i in range(n):
+        fin_prio.append(converge_prios(w[:, i]))
+
+    return restaurants[np.argmax(fin_prio)]
